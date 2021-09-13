@@ -12,20 +12,25 @@ readonly GOAL=o
 readonly FAIL=x
 readonly DEFAULT_REWARD=-0.04
 
+readonly ACTION_LIST=(UP DOWN LEFT RIGHT)
 
-row_idx=0
 
-for line in $GRID; do
-	col_idx=0
-	for cell in `echo $line | grep -o .`; do
-		eval line$row_idx[col_idx]=$cell
-		((col_idx += 1))
-	done
-	((row_idx += 1))
-done 
+read_grid(){
+	local _row_idx=0
 
-row_length=$row_idx
-col_length=$col_idx
+	for line in $GRID; do
+		local _col_idx=0
+		for cell in `echo $line | grep -o .`; do
+			eval grid_line$_row_idx[_col_idx]=$cell
+			((_col_idx += 1))
+		done
+		((_row_idx += 1))
+	done 
+
+	row_length=$_row_idx
+	col_length=$_col_idx
+}
+
 
 
 move(){
@@ -33,11 +38,11 @@ move(){
 	local _action=$3
 
 	case $_action in 
-		UP ) _state[0]=$((_state[0] - 1));;
-		DOWN ) (("_state[0]" += 1));;
-		LEFT ) _state[1]=$((_state[1] - 1));;
-		RIGHT ) (("_state[1]" += 1));;
-		* ) raise "unexpected action";;
+		${ACTION_LIST[0]} ) _state[0]=$((_state[0] - 1));;
+		${ACTION_LIST[1]} ) (("_state[0]" += 1));;
+		${ACTION_LIST[2]} ) _state[1]=$((_state[1] - 1));;
+		${ACTION_LIST[3]} ) (("_state[1]" += 1));;
+		* ) raise "unexpected action $_action";;
 	esac
 
 	if [ ${_state[0]} -lt 0 ] || \
@@ -56,13 +61,13 @@ reward_func(){
 	local _next_state=($3 $4)
 
 	local _row=${_next_state[0]}
-	local _col=${_state[1]}
+	local _col=${_next_state[1]}
 
-	eval local _line=(\${line$_row[@]}) 
+	eval local _grid_line=(\${grid_line$_row[@]}) 
 	
 	done=true
 
-	case ${_line[$_col]} in
+	case ${_grid_line[$_col]} in
 		$GOAL ) reward=1;;
 		$FAIL ) reward=-1;;
 		* ) reward=$DEFAULT_REWARD
@@ -86,6 +91,8 @@ step(){
 	state=(${next_state[@]})
 } 
 
+
+read_grid
 
 if [ $BASH_SOURCE = $0 ]; then
 	state[0]=0
