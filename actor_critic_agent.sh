@@ -110,6 +110,17 @@ learn(){
 }
 
 
+show_V(){
+	for (( i=0; i<$row_length; i++  )){
+		for (( j=0; j<$col_length; j++  )){
+			eval echo -n "\${V_line${i}[j]}"
+			echo -ne "\t"
+		}
+		echo 
+	}
+}
+
+
 show_Q(){ 
 	for (( i=0; i<$row_length; i++  )){ 
 		local up_list="" 
@@ -141,5 +152,8 @@ if [ $BASH_SOURCE = $0 ]; then
 	init_Q 
 
 	learn 
+	echo V
+	show_V
+	echo -e "\n\nQ"
 	show_Q
 fi
