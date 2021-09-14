@@ -39,9 +39,28 @@ get_V_value(){
 }
 
 
+get_Q_now(){ 
+	local _state=($1 $2)
+	local _action_idx=$3
+
+	local _target_Q=Q_line${_state[0]}_col${_state[1]}[$_action_idx]
+	eval Q_now=\${$_target_Q}
+}
+
+
 policy(){
-	action=${foo[$policy_idx]}
-	((policy_idx += 1)) 
+	local _state=($1 $2)
+	declare -ag value_list
+
+	for (( i=0; i<${#ACTION_LIST[@]}; i++ )){
+		get_Q_now ${_state[@]} $i
+		value_list+=($Q_now)
+	} 
+
+	get_softmax
+	get_chosen_idx
+
+	action=${ACTION_LIST[$chosen_idx]}
 }
 
 
@@ -76,9 +95,9 @@ update_V_Q(){
 		fi
 	}
 
+	get_Q_now ${_state_now[@]} $_action_idx
 	local _target_Q=Q_line${_row}_col${_col}[$_action_idx]
-	eval local _Q_now=\${$_target_Q}
-	local _new_Q=`echo "scale=5; $_weighted_td_actor + $_Q_now" | bc` 
+	local _new_Q=`echo "scale=5; $_weighted_td_actor + $Q_now" | bc` 
 	eval $_target_Q=$_new_Q
 }
 
@@ -102,8 +121,8 @@ learn(){
 
 			update_V_Q ${_state_now[@]}
 
+			echo $action
 			echo ${state[@]}
-			echo $done
 			echo 
 		done
 	} 
