@@ -42,9 +42,9 @@ move(){
 	esac
 
 	if [ ${_state[0]} -lt 0 ] || \
-			[ ${_state[0]} -gt $row_length ] || \
+			[ ${_state[0]} -eq $row_length ] || \
 				[ ${_state[1]} -lt 0 ] || \
-					[ ${_state[1]} -gt $col_length  ]; then
+					[ ${_state[1]} -eq $col_length  ]; then
 		_state=($1 $2)
 	fi
 
