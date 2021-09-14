@@ -3,10 +3,10 @@
 set -e 
 source ./environment.sh
 
-
-readonly MAX_EPISODE=1
-readonly GAMMA=0.9
-readonly LEARNING_RATE=0.1
+readonly MAX_EPISODE
+readonly GAMMA
+readonly LEARNING_RATE_ACTOR
+readonly LEARNING_RATE_CRITIC
 
 
 init_V(){
@@ -56,18 +56,21 @@ get_td(){
 
 
 update_V_Q(){ 
+	## for critic
 	local _state_now=($1 $2)
 	local _row=${_state_now[0]}
 	local _col=${_state_now[1]}
 
-	local _weighted_td=`echo "scale=5; $LEARNING_RATE * $td" | bc`
+	local _weighted_td_critic=`echo "scale=5; $LEARNING_RATE_CRITIC * $td" | bc`
 
 	local _target_V=V_line${_row}[$_col]
-	local _new_V=`echo "scale=5; $_weighted_td + $V_now" | bc`
-	eval $_target_V=$_new_V
+	local _new_V=`echo "scale=5; $_weighted_td_critic + $V_now" | bc`
+	eval $_target_V=$_new_V 
 
+	## for actor
+	local _weighted_td_actor=`echo "scale=5; $LEARNING_RATE_ACTOR * $td" | bc`
 
-	for (( i=0; i< "${#ACTION_LIST[@]}"; i++)){
+	for (( i=0; i< "${#ACTION_LIST[@]}"; i++)){ 
 		if [ ${ACTION_LIST[i]} = $action  ]; then
 			local _action_idx=$i
 		fi
@@ -75,7 +78,7 @@ update_V_Q(){
 
 	local _target_Q=Q_line${_row}_col${_col}[$_action_idx]
 	eval local _Q_now=\${$_target_Q}
-	local _new_Q=`echo "scale=5; $_weighted_td + $_Q_now" | bc` 
+	local _new_Q=`echo "scale=5; $_weighted_td_actor + $_Q_now" | bc` 
 	eval $_target_Q=$_new_Q
 }
 

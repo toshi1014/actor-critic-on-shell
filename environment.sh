@@ -2,17 +2,13 @@
 
 set -e
 source ./utils.sh
+source ./config.txt
 
-
-readonly GRID="
-...
-..o
-" 
-readonly GOAL=o
-readonly FAIL=x
-readonly DEFAULT_REWARD=-0.04
-
-readonly ACTION_LIST=(UP DOWN LEFT RIGHT)
+readonly GRID
+readonly GOAL
+readonly FAIL
+readonly DEFAULT_REWARD
+readonly ACTION_LIST
 
 
 read_grid(){
