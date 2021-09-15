@@ -108,7 +108,7 @@ learn(){
 	local _episode_num=$1 i
 
 	for (( i=0; i<$_episode_num; i++ )){
-		echo episode $i
+		echo -e "\n\tepisode $i\n"
 		done=false
 		state=(0 0)
 
@@ -131,6 +131,48 @@ learn(){
 			echo
 		done
 	}
+}
+
+
+greedy_policy(){
+	local _state=($1 $2)
+
+	get_Q_now ${_state[@]} 0
+	local _max_value=$Q_now
+	local _arg_max=0
+
+	for (( i=0; i<${#ACTION_LIST[@]}; i++ )){
+		get_Q_now ${_state[@]} $i
+		if [ `echo "scale=5; $Q_now > $_max_value" | bc -l` -eq 1 ]; then
+			_max_value=$Q_now
+			_arg_max=$i
+		fi
+	}
+
+	action=${ACTION_LIST[$_arg_max]}
+}
+
+
+best_move(){
+	echo -e "\n\n\tbest move\n"
+	done=false
+	state=(0 0)
+	local _sum_reward=0
+
+	while ! $done; do
+		local _state_now=${state[@]}
+
+		greedy_policy ${state[@]}
+		step $action
+
+		_sum_reward=`echo "scale=5; $reward + $_sum_reward" | bc -l`
+
+		echo $action
+		echo ${state[@]}
+		echo
+	done
+
+	echo total_reward: $_sum_reward
 }
 
 
