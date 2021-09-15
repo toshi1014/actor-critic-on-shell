@@ -105,10 +105,10 @@ update_V_Q(){
 
 
 learn(){
-	local _episode_num=$1 i
+	local i
 
-	for (( i=0; i<$_episode_num; i++ )){
-		echo -e "\n\tepisode $i\n"
+	for (( i=0; i<$MAX_EPISODE; i++ )){
+		echo -e "\n\tepisode $((i+1))\n"		## i+1: idx to order
 		done=false
 		state=(0 0)
 
@@ -214,10 +214,12 @@ show_Q(){
 
 
 if [ $BASH_SOURCE = $0 ]; then
+	readonly MAX_EPISODE=1
+
 	init_V
 	init_Q
 
-	learn 1
+	learn
 	echo V
 	show_V
 	echo -e "\n\nQ"
