@@ -3,13 +3,13 @@
 set -e
 source ./environment.sh
 
-readonly MAX_EPISODE
 readonly GAMMA
 readonly LEARNING_RATE_ACTOR
 readonly LEARNING_RATE_CRITIC
 
 
 init_V(){
+	local i j
 	for (( i=0; i<$row_length; i++  )){
 		for (( j=0; j<$col_length; j++  )){
 			eval V_line$i[j]=0
@@ -19,6 +19,7 @@ init_V(){
 
 
 init_Q(){
+	local i j k
 	for (( i=0; i<$row_length; i++  )){
 		for (( j=0; j<$col_length; j++  )){
 			for (( k=0; k<${#ACTION_LIST[@]}; k++  )){
@@ -49,7 +50,7 @@ get_Q_now(){
 
 
 policy(){
-	local _state=($1 $2)
+	local _state=($1 $2) i
 	declare -a _value_list
 
 	for (( i=0; i<${#ACTION_LIST[@]}; i++ )){
@@ -89,6 +90,7 @@ update_V_Q(){
 	## for actor
 	local _weighted_td_actor=`echo "scale=5; $LEARNING_RATE_ACTOR * $td" | bc`
 
+	local i
 	for (( i=0; i< "${#ACTION_LIST[@]}"; i++)){
 		if [ ${ACTION_LIST[i]} = $action  ]; then
 			local _action_idx=$i
@@ -103,7 +105,10 @@ update_V_Q(){
 
 
 learn(){
-	for (( i=0; i<MAX_EPISODE; i++ )){
+	local _episode_num=$1 i
+
+	for (( i=0; i<$_episode_num; i++ )){
+		echo episode $i
 		done=false
 		state=(0 0)
 
@@ -130,6 +135,8 @@ learn(){
 
 
 show_V(){
+	local i j
+
 	for (( i=0; i<$row_length; i++  )){
 		for (( j=0; j<$col_length; j++  )){
 			eval echo -n "\${V_line${i}[j]}"
@@ -141,6 +148,8 @@ show_V(){
 
 
 show_Q(){
+	local i j
+
 	for (( i=0; i<$row_length; i++  )){
 		local up_list=""
 		local down_list=""
@@ -162,15 +171,11 @@ show_Q(){
 }
 
 
-policy_idx=0
-foo=(DOWN RIGHT RIGHT)
-
-
 if [ $BASH_SOURCE = $0 ]; then
 	init_V
 	init_Q
 
-	learn
+	learn 1
 	echo V
 	show_V
 	echo -e "\n\nQ"
