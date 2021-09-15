@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e 
+set -e
 source ./environment.sh
 
 readonly MAX_EPISODE
@@ -14,7 +14,7 @@ init_V(){
 		for (( j=0; j<$col_length; j++  )){
 			eval V_line$i[j]=0
 		}
-	} 
+	}
 }
 
 
@@ -25,7 +25,7 @@ init_Q(){
 				eval Q_line${i}_col${j}[k]=0
 			}
 		}
-	} 
+	}
 }
 
 
@@ -39,7 +39,7 @@ get_V_value(){
 }
 
 
-get_Q_now(){ 
+get_Q_now(){
 	local _state=($1 $2)
 	local _action_idx=$3
 
@@ -50,17 +50,17 @@ get_Q_now(){
 
 policy(){
 	local _state=($1 $2)
-	declare -ag value_list
+	declare -a _value_list
 
 	for (( i=0; i<${#ACTION_LIST[@]}; i++ )){
 		get_Q_now ${_state[@]} $i
-		value_list+=($Q_now)
-	} 
+		_value_list+=($Q_now)
+	}
 
-	get_softmax
-	get_chosen_idx
+	local _prob_list=(`echo ${_value_list[@]} | ./utils/get_softmax.sh`)
+	local _chosen_idx=`echo ${_prob_list[@]} | ./utils/get_chosen_idx.sh`
 
-	action=${ACTION_LIST[$chosen_idx]}
+	action=${ACTION_LIST[$_chosen_idx]}
 }
 
 
@@ -74,7 +74,7 @@ get_td(){
 }
 
 
-update_V_Q(){ 
+update_V_Q(){
 	## for critic
 	local _state_now=($1 $2)
 	local _row=${_state_now[0]}
@@ -84,12 +84,12 @@ update_V_Q(){
 
 	local _target_V=V_line${_row}[$_col]
 	local _new_V=`echo "scale=5; $_weighted_td_critic + $V_now" | bc`
-	eval $_target_V=$_new_V 
+	eval $_target_V=$_new_V
 
 	## for actor
 	local _weighted_td_actor=`echo "scale=5; $LEARNING_RATE_ACTOR * $td" | bc`
 
-	for (( i=0; i< "${#ACTION_LIST[@]}"; i++)){ 
+	for (( i=0; i< "${#ACTION_LIST[@]}"; i++)){
 		if [ ${ACTION_LIST[i]} = $action  ]; then
 			local _action_idx=$i
 		fi
@@ -97,14 +97,14 @@ update_V_Q(){
 
 	get_Q_now ${_state_now[@]} $_action_idx
 	local _target_Q=Q_line${_row}_col${_col}[$_action_idx]
-	local _new_Q=`echo "scale=5; $_weighted_td_actor + $Q_now" | bc` 
+	local _new_Q=`echo "scale=5; $_weighted_td_actor + $Q_now" | bc`
 	eval $_target_Q=$_new_Q
 }
 
 
 learn(){
 	for (( i=0; i<MAX_EPISODE; i++ )){
-		done=false 
+		done=false
 		state=(0 0)
 
 		while ! $done; do
@@ -123,9 +123,9 @@ learn(){
 
 			echo $action
 			echo ${state[@]}
-			echo 
+			echo
 		done
-	} 
+	}
 }
 
 
@@ -135,30 +135,30 @@ show_V(){
 			eval echo -n "\${V_line${i}[j]}"
 			echo -ne "\t"
 		}
-		echo 
+		echo
 	}
 }
 
 
-show_Q(){ 
-	for (( i=0; i<$row_length; i++  )){ 
-		local up_list="" 
-		local down_list="" 
-		local left_right_list="" 
+show_Q(){
+	for (( i=0; i<$row_length; i++  )){
+		local up_list=""
+		local down_list=""
+		local left_right_list=""
 		local bottom_line=""
 
-		for (( j=0; j<$col_length; j++  )){ 
-			eval local _cell=(\${Q_line${i}_col${j}[@]}) 
+		for (( j=0; j<$col_length; j++  )){
+			eval local _cell=(\${Q_line${i}_col${j}[@]})
 			up_list+="\t\t${_cell[0]}\t\t|"
 			left_right_list+="\t${_cell[2]}\t\t${_cell[3]}\t|"
 			down_list+="\t\t${_cell[1]}\t\t|"
 			bottom_line+="================================"
 		}
-		echo -e $up_list 
-		echo -e $left_right_list 
-		echo -e $down_list 
+		echo -e $up_list
+		echo -e $left_right_list
+		echo -e $down_list
 		echo $bottom_line
-	} 
+	}
 }
 
 
@@ -168,9 +168,9 @@ foo=(DOWN RIGHT RIGHT)
 
 if [ $BASH_SOURCE = $0 ]; then
 	init_V
-	init_Q 
+	init_Q
 
-	learn 
+	learn
 	echo V
 	show_V
 	echo -e "\n\nQ"
