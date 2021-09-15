@@ -1,13 +1,15 @@
 # environment.sh
 
 GRID="
-...
+.#.
 ..o
-" 
+"
 
 GOAL=o
 
 FAIL=x
+
+BLOCK=#
 
 DEFAULT_REWARD=-0.04
 
@@ -16,10 +18,12 @@ ACTION_LIST=(UP DOWN LEFT RIGHT)
 
 # actor_critic_agent.sh
 
-MAX_EPISODE=1
-
 GAMMA=0.9
 
 LEARNING_RATE_ACTOR=0.1
 
 LEARNING_RATE_CRITIC=0.1
+
+
+# train.sh
+MAX_EPISODE=3

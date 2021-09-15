@@ -6,6 +6,7 @@ source ./config.txt
 readonly GRID
 readonly GOAL
 readonly FAIL
+readonly BLOCK
 readonly DEFAULT_REWARD
 readonly ACTION_LIST
 
@@ -28,25 +29,35 @@ read_grid(){
 
 
 move(){
-	local _state=($1 $2)
+	local _row=$1
+	local _col=$2
 	local _action=$3
 
 	case $_action in
-		${ACTION_LIST[0]} ) _state[0]=$((_state[0] - 1));;
-		${ACTION_LIST[1]} ) (("_state[0]" += 1));;
-		${ACTION_LIST[2]} ) _state[1]=$((_state[1] - 1));;
-		${ACTION_LIST[3]} ) (("_state[1]" += 1));;
+		${ACTION_LIST[0]} ) _row=$((_row - 1));;
+		${ACTION_LIST[1]} ) (("_row" += 1));;
+		${ACTION_LIST[2]} ) _col=$((_col - 1));;
+		${ACTION_LIST[3]} ) (("_col" += 1));;
 		* ) raise "unexpected action $_action";;
 	esac
 
-	if [ ${_state[0]} -lt 0 ] || \
-			[ ${_state[0]} -eq $row_length ] || \
-				[ ${_state[1]} -lt 0 ] || \
-					[ ${_state[1]} -eq $col_length  ]; then
-		_state=($1 $2)
+	## make row & col in 0 < xxx < xxx_length
+	if [ ${_row} -lt 0 ] || \
+			[ ${_row} -eq $row_length ] || \
+				[ ${_col} -lt 0 ] || \
+					[ ${_col} -eq $col_length ]; then
+		_row=$1
+		_col=$2
 	fi
 
-	next_state=(${_state[@]})
+	## if blocked
+	eval local _grid_line=(\${grid_line$_row[@]})
+	if [ ${_grid_line[$_col]} = $BLOCK ]; then
+		_row=$1
+		_col=$2
+	fi
+
+	next_state=($_row $_col)
 }
 
 
