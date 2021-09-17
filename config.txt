@@ -1,8 +1,9 @@
 # environment.sh
 
 GRID="
+..#
 ...
-..o
+x.o
 "
 
 GOAL=o
